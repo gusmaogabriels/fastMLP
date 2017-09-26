@@ -1,2 +1,2 @@
 # fastMLP
-Fast batch MLP algorithm for classification based on numpy memmap
+Fast batch MLP (Multi-layer Perceptron) algorithm for classification based on numpy memmap
