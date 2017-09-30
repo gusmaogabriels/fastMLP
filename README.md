@@ -2,7 +2,7 @@
 ==================================================================
 *Fast batch MLP (Multi-layer Perceptron) algorithm for classification based on numpy memmap.*
 
-*pip install* -> `pip install --upgrade https://github.com/gusmaogabriels/optinpy/zipball/master`
+*pip install* -> `pip install --upgrade https://github.com/gusmaogabriels/fastMLP/zipball/master`
 
 **The University of Campinas, UNICAMP**
 
@@ -11,5 +11,6 @@
 
 ## Overview
 
-	- Multi-layer perceptron (MLP) Artificial Neural Network (ANN)
-	- Memory-mapped files using numpy's *memmap*
+     Multi-layer perceptron (MLP) Artificial Neural Network (ANN)
+	 Memory-mapped files using numpy's *memmap*
+	 
