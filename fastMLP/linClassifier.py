@@ -9,30 +9,41 @@ import numpy as np
 import os
 import time
 import uuid
+import shutil
 
 
 for item in os.listdir(os.getcwd()):
     if item.endswith(".temp"):
         os.remove(item)
 
+for item in os.listdir(os.getcwd()):
+    if item.endswith(".temp"):
+        os.remove(item)
 
 class LinClassifier(object):
       
       def __init__(self,train_fl,test_fl,holdout):
             
+            string = ''
+            self._curpath = os.getcwd()
+            self._temp_path = self._curpath + '\\temp{}'.format(string)
+            if 'temp{}'.format(string) in os.listdir(os.getcwd()):
+                  shutil.rmtree('temp{}'.format(string))
+            else:
+                  pass
             
             self.uuid = str(uuid.uuid4())
             self.time = []
                        
             data = np.load(train_fl)
-            l_train = np.floor(len(data['X']*holdout))
+            l_train = int(np.floor(len(data['X'])*holdout))
             self.X = np.memmap('X_tr.temp',np.float32,'w+',shape=(l_train,len(data['X'][0,:])+1))
             self.S = np.memmap('S_tr.temp',np.float32,'w+',shape=(l_train,len(data['S'][0,:])))
             self.X[:,:-1] = data['X'][:l_train]
             self.X[:,-1] = 1
             self.S[:] = data['S'][:l_train]
             self.Xval = np.memmap('X_v.temp',np.float32,'w+',shape=(data['X'].shape[0]-l_train,data['X'].shape[1]+1))
-            self.XScal= np.memmap('S_v.temp',np.float32,'w+',shape=(data['S'].shape[0]-l_train,data['S'].shape[1]))
+            self.Sval= np.memmap('S_v.temp',np.float32,'w+',shape=(data['S'].shape[0]-l_train,data['S'].shape[1]))
             self.Xval[:,:-1] = data['X'][l_train:]
             self.Xval[:,-1] = 1
             self.Sval[:] = data['S'][l_train:]
@@ -176,9 +187,10 @@ class ELM(LinClassifier):
                   print('ELM not setup')
             
                         
+lc_ob = LinClassifier(os.getcwd()+r'\\..//Examples//MNIST\\xtraining.npz',
+                      os.getcwd()+r'\\..//Examples//MNIST\\xtraining.npz',
+                      2/3.)       
 """
-lc_ob = LinClassifier(X_tr,S_tr,X_v,S_v,X_ts,S_ts)       
-
 i_vec = []
 error_vec = []          
 
