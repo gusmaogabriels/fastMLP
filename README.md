@@ -1,6 +1,6 @@
 **fastMLP**
 ==================================================================
-*Fast batch MLP (Multi-layer Perceptron) algorithm for classification based on numpy memmap.*
+*Fast batch MLP (Multi-layer Perceptron) algorithm based on numpy memmap.*
 
 *pip install* -> `pip install --upgrade https://github.com/gusmaogabriels/fastMLP/zipball/master`
 
