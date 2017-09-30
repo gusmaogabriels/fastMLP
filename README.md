@@ -10,7 +10,6 @@
    - *Prof. Dr. Levy Boccato; Prof. Dr. Fernando Von Zuben.*
 
 ## Overview
-   
-   Multi-layer perceptron (MLP) Artificial Neural Network (ANN)
-   Memory-mapped files using numpy's *memmap*
+Multi-layer perceptron (MLP) Artificial Neural Network (ANN)
+Memory-mapped files using numpy's *memmap*
 	 
