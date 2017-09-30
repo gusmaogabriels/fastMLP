@@ -5,10 +5,6 @@ Created on Fri Sep 15 11:08:59 2017
 @author: Gabriel S. Gusmão, gusmaogabriels@gmail.com
 """
 
-
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
-
 import numpy as np
 import os
 import shutil

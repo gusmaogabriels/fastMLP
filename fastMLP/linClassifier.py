@@ -5,85 +5,48 @@ Created on Fri Sep 15 11:08:59 2017
 @author: Gabriel S. Gusmão, gusmaogabriels@gmail.com
 """
 
-from IPython import get_ipython
-get_ipython().magic('reset -sf')
-
-from loadMNIST import *
-import matplotlib.pyplot as plt
-
-import locale
-# Set to German locale to get comma decimal separater
-locale.setlocale(locale.LC_NUMERIC, "portuguese")
-
-plt.rcParams['axes.formatter.use_locale'] = True
-
-import seaborn as sns
 import numpy as np
 import os
 import time
 import uuid
-import gc
-from scipy import stats
 
-sns.set_style('white')
 
 for item in os.listdir(os.getcwd()):
     if item.endswith(".temp"):
         os.remove(item)
 
-font = 'Consolas'
-plt.rc('font',family=font)
-plt.rc('mathtext',fontset='custom')
-plt.rc('mathtext',rm=font)    
-plt.rc('mathtext',it='{}:italic'.format(font))
-plt.rc('mathtext',bf='{}:bold'.format(font))
-plt.rc('mathtext',default='regular')
-fs=8
-plt.rc('font', size=fs)          # controls default text sizes
-plt.rc('axes', titlesize=fs)     # fontsize of the axes title#
-plt.rc('axes', labelsize=fs)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=fs)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=fs)    # fontsize of the tick labels
-plt.rc('legend', fontsize=fs)    # legend fontsize
-plt.rc('figure', titlesize=fs)  # fontsize o
-
-plt.rc('text.latex',unicode=True)
-
-data = np.load('xtraining.npz')
-l_train = 40000
-X_tr = np.memmap('X_tr.temp',np.float32,'w+',shape=(l_train,len(data['X'][0,:])+1))
-S_tr = np.memmap('S_tr.temp',np.float32,'w+',shape=(l_train,len(data['S'][0,:])))
-X_tr[:,:-1] = data['X'][:l_train]
-X_tr[:,-1] = 1
-S_tr[:] = data['S'][:l_train]
-X_v = np.memmap('X_v.temp',np.float32,'w+',shape=(data['X'].shape[0]-l_train,data['X'].shape[1]+1))
-S_v = np.memmap('S_v.temp',np.float32,'w+',shape=(data['S'].shape[0]-l_train,data['S'].shape[1]))
-X_v[:,:-1] = data['X'][l_train:]
-X_v[:,-1] = 1
-S_v[:] = data['S'][l_train:]
-data.close()
-
-
-data = np.load('xtesting.npz')
-X_ts = np.memmap('X_ts.temp',np.float32,'w+',shape=(data['X'].shape[0],data['X'].shape[1]+1))
-S_ts = np.memmap('S_ts.temp',np.float32,'w+',shape=data['S'].shape)
-X_ts[:,:-1] = data['X']
-X_ts[:,-1] = 1
-S_ts[:] = data['S']
-data.close()
 
 class LinClassifier(object):
       
-      def __init__(self,X,S,Xval,Sval,Xtest,Stest):
-            self.X = X
-            self.S = S
-            self.Xval = Xval
-            self.Sval = Sval
-            self.Xtest = Xtest
-            self.Stest = Stest
+      def __init__(self,train_fl,test_fl,holdout):
+            
+            
             self.uuid = str(uuid.uuid4())
             self.time = []
-      
+                       
+            data = np.load(train_fl)
+            l_train = np.floor(len(data['X']*holdout))
+            self.X = np.memmap('X_tr.temp',np.float32,'w+',shape=(l_train,len(data['X'][0,:])+1))
+            self.S = np.memmap('S_tr.temp',np.float32,'w+',shape=(l_train,len(data['S'][0,:])))
+            self.X[:,:-1] = data['X'][:l_train]
+            self.X[:,-1] = 1
+            self.S[:] = data['S'][:l_train]
+            self.Xval = np.memmap('X_v.temp',np.float32,'w+',shape=(data['X'].shape[0]-l_train,data['X'].shape[1]+1))
+            self.XScal= np.memmap('S_v.temp',np.float32,'w+',shape=(data['S'].shape[0]-l_train,data['S'].shape[1]))
+            self.Xval[:,:-1] = data['X'][l_train:]
+            self.Xval[:,-1] = 1
+            self.Sval[:] = data['S'][l_train:]
+            data.close()
+            
+            
+            data = np.load(test_fl)
+            self.Xtest = np.memmap('X_ts.temp',np.float32,'w+',shape=(data['X'].shape[0],data['X'].shape[1]+1))
+            self.Stest = np.memmap('S_ts.temp',np.float32,'w+',shape=data['S'].shape)
+            self.Xtest[:,:-1] = data['X']
+            self.Xtest[:,-1] = 1
+            self.Stest[:] = data['S']
+            data.close()
+     
             self.mHtH = np.memmap('mHtH-{}.temp'.format(self.uuid),np.float32,'w+',shape=(self.X.shape[1],self.X.shape[1]))
             self.mHtH[:] = np.dot(self.X.T,self.X,self.mHtH)
             
@@ -213,7 +176,7 @@ class ELM(LinClassifier):
                   print('ELM not setup')
             
                         
-
+"""
 lc_ob = LinClassifier(X_tr,S_tr,X_v,S_v,X_ts,S_ts)       
 
 i_vec = []
@@ -233,7 +196,7 @@ elm_obj.gen_randhiddenlayer((-0.05,0.05),np.tanh)
       
 #elm_obj.gen_randhiddenlayer(100,(-0.05,0.05),np.tanh)
 #c_min, CER_min, c_space, CER_val, CER_val_class = lin_class_obj.train(c_space)
-"""
+
 plt.figure(figsize=(6,6/1.618))
 m, = plt.plot(c_space,CER_val,'.',ms=3,color='black',alpha=0.2)
 l, = plt.plot(c_space,CER_val,'-',lw=1,alpha=0.8)
