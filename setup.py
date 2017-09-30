@@ -3,9 +3,7 @@ from distutils.core import setup
 
 requires = ['numpy','os','shutil','time']
 
-packages = [
-		'fastMLP',
-]
+packages = ['fastMLP',]
 
 package_dir = {'fastMLP' : 'fastMLP'}
 package_data = { 'fastMLP' : []}
