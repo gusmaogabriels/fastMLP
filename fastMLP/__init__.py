@@ -18,6 +18,7 @@ import numpy as np
 import os
 import shutil
 import time
-from .fastMLP import fastMLP
+import fastMLP
+import linClassifier
 
 __all__ = ['np','__author__','__version__']
