@@ -12,9 +12,11 @@
 ### Overview
 Multi-layer perceptron (MLP) Artificial Neural Network (ANN).  
 Batch-mode training with k-fold strategy, memory-mapped files using [numpy](http://www.numpy.org/)'s [*memmap*](https://br.linkedin.com/pub/gabriel-saben%C3%A7a-gusm%C3%A3o/115/aa6/aa8).  
-Training as of the [Conjugate Gradient](https://github.com/gusmaogabriels/optinpy#conjugate-gradient-methodconjugate-gradient) algorithm, exact derivatives and *H*×*p* calcuations by backpropagation (BP).  
+Training as of the [Conjugate Gradient](https://github.com/gusmaogabriels/optinpy#conjugate-gradient-methodconjugate-gradient) algorithm, exact derivatives and *H*×*p* calculations by backpropagation (BP).  
 
 ### Examples
+
+*from MNIST [sample digits database](/Examples/MNIST)*
 
 #### Linear Classifier
 
@@ -33,17 +35,17 @@ lin_classifier.set_W(c=600) # solves the problem for the regularization paramete
 lin_classifier.error('test') # calculates the classification error per class and the average per class
 ```
 	 
-	 >> (0.14235765272333828,
-		[0.041836734693877553,
-		0.024669603524229075,
-		0.21220930232558138,
-		0.12871287128712872,
-		0.10285132382892057,
-		0.26569506726457398,
-		0.083507306889352817,
-		0.14202334630350194,
-		0.22484599589322382,
-		0.19722497522299307])
+	 >> (0.142357652,
+		[0.041836734,
+		0.024669603,
+		0.212209302,
+		0.128712871,
+		0.102851323,
+		0.265695067,
+		0.083507306,
+		0.142023346,
+		0.224845995,
+		0.197224975])
 	 
 #### Extreme-Learning Machine (ELM)
 
@@ -59,17 +61,17 @@ elm_classifier.set_W(c=1e-10) # solves the problem for the regularization parame
 elm_classifier.error('test') # calculates the classification error per class and the average per class
 ```
 	 
-	 >> (0.14235765272333828,
-		[0.041836734693877553,
-		0.024669603524229075,
-		0.21220930232558138,
-		0.12871287128712872,
-		0.10285132382892057,
-		0.26569506726457398,
-		0.083507306889352817,
-		0.14202334630350194,
-		0.22484599589322382,
-		0.19722497522299307])
+	 >> (0.016326531,
+		[0.010572687,
+		0.055232558,
+		0.044554455,
+		0.039714868,
+		0.043721973,
+		0.025052192,
+		0.059338521,
+		0.05338809,
+		0.073339941,
+		0.042124182])
 
 ![Alt Text](/raw/elm_lin.png)	
 
