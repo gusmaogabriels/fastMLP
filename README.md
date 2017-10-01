@@ -28,11 +28,15 @@ import os
 # each of which includes a 'X' and 'S' arrays of data input and output, respectively
 training_path = os.getcwd()+r'//Examples//MNIST\\xtraining.npz' 
 testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
-	 
-lin_classifier = mlp.LinearClassifier(training_path,testing_path,holdout=2/3.) # creates the linear classifier
-lin_classifier.build() # builds the closed-form Tikhonov regularized regression problem 
-lin_classifier.set_W(c=600) # solves the problem for the regularization parameter c = 600
-lin_classifier.error('test') # calculates the classification error per class and the average per class
+
+# creates the linear classifier
+lin_classifier = mlp.LinearClassifier(training_path,testing_path,holdout=2/3.)
+# builds the closed-form Tikhonov regularized regression problem 
+lin_classifier.build()
+# solves the problem for the regularization parameter c = 600
+lin_classifier.set_W(c=600) 
+# calculates the classification error per class and the average per class
+lin_classifier.error('test') 
 ```
 	 
 	 >> (0.142357652,
@@ -50,15 +54,17 @@ lin_classifier.error('test') # calculates the classification error per class and
 #### Extreme-Learning Machine (ELM)
 
  ```python  
-import fastMLP as mlp
-import os
-import numpy as np
 	 
-elm_classifier = mlp.ELM(training_path,testing_path,holdout=2/3.) # creates the ELM classifier
-elm_classifier.build(n_hidden=2000) # builds the a hidden layer with 200
-elm_classifier.gen_random_layer(interval=(-0.05,0.05),fun=np.tanh) # random uniform between -0.05 and 0.05 and hyperbolic tangent transfer function
-elm_classifier.set_W(c=1e-10) # solves the problem for the regularization parameter c = 600
-elm_classifier.error('test') # calculates the classification error per class and the average per class
+# creates the ELM classifier	 
+elm_classifier = mlp.ELM(training_path,testing_path,holdout=2/3.) 
+# builds the a hidden layer with 200
+elm_classifier.build(n_hidden=2000) 
+# random uniform between -0.05 and 0.05 and hyperbolic tangent transfer function
+elm_classifier.gen_random_layer(interval=(-0.05,0.05),fun=np.tanh) 
+# solves the problem for the regularization parameter c = 1e-10
+elm_classifier.set_W(c=1e-10)
+# calculates the classification error per class and the average per class
+elm_classifier.error('test') 
 ```
 	 
 	 >> (0.016326531,
@@ -78,14 +84,17 @@ elm_classifier.error('test') # calculates the classification error per class and
 #### Multi-layer Perceptron (MLP)
 
  ```python  
-import fastMLP as mlp
-	
-	 
-mlp_classifier = mlp.MLP('the_net_name',hidden_layers=[200,100]) # instantiates the MLP class, with two hidden layers with 200 and 100 neurons, respectively
-mlp_classifier.load_data(training_path,testing_path,W=[]) # loads the data and allocates the ANN strucure memmap files under the hood
-mlp_classifier.init_weights() # initialize the weights, from the initial guess (if given) or uniformily random
-mlp_classifier.init_folds(5) # set the (k=5)-folds problem by partitioning the training set
-mlp_classifier.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.25,cut = 0.25) # begin the training session
+
+# instantiates the MLP class, with two hidden layers with 200 and 100 neurons, respectively	 
+mlp_classifier = mlp.MLP('the_net_name',hidden_layers=[200,100]) 
+# loads the data and allocates the ANN strucure memmap files under the hood
+mlp_classifier.load_data(training_path,testing_path,W=[]) 
+# initialize the weights, from the initial guess (if given) or uniformily random
+mlp_classifier.init_weights()
+# set the (k=5)-folds problem by partitioning the training set
+mlp_classifier.init_folds(5) 
+# begin the k-fold training session
+mlp_classifier.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.25,cut = 0.25) 
 ```
 
 ### Requirements
