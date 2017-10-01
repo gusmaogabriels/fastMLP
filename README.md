@@ -60,7 +60,7 @@ lin_classifier.error('test')
 	 
 # creates the ELM classifier	 
 elm_classifier = mlp.ELM(training_path,testing_path,holdout=2/3.) 
-# builds the a hidden layer with 200
+# builds the a hidden layer with 2000 neurons
 elm_classifier.build(n_hidden=2000) 
 # random uniform between -0.05 and 0.05 and hyperbolic tangent transfer function
 elm_classifier.gen_random_layer(interval=(-0.05,0.05),fun=np.tanh) 
