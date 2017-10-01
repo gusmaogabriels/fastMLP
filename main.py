@@ -21,7 +21,7 @@ testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
 
 #ann_elm = fastMLP.ELM(training_path,
 #                      testing_path,
-                      2/3.) 
+                      #2/3.) 
 #ann_elm.build(3000)
 #ann_elm.gen_random_layer((-0.05,0.05),np.tanh) 
 #ann_elm.set_W(1e-10)
@@ -31,8 +31,8 @@ testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
 
 
 
-ANN = fastMLP.MLP('Evol22',[200,200,200])
+ANN = fastMLP.MLP('Evol22'+str(np.random.randint(0,9,10)),[100,100,100,100])
 ANN.load_data(training_path,testing_path,[])
 ANN.init_weights()
 ANN.init_folds(5)
-ANN.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.95,cut = 0.25)
+ANN.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.25,cut = 0.25)
