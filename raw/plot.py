@@ -87,22 +87,22 @@ for layer in range(len(nlayers)):
       color0 *= 1.5
       
 #G.add_edges_from(edges)      
-c = ['gold','silver','silver','red']
+c = ['goldenrod','grey','grey','darkred']
 for layer in range(len(nlayers)):
       for node in range(nlayers[layer]):
             if node == nlayers[layer]-1 and layer<len(nlayers)-1:
-                  nx.draw_networkx_nodes(G,positions,nodelist=[str(layer)+'_'+str(node)],node_color='black',node_size=400,alpha=0.8,node_shape='s')
+                  nx.draw_networkx_nodes(G,positions,nodelist=[str(layer)+'_'+str(node)],node_color='black',node_size=600,alpha=0.8,node_shape='s')
             else:
-                  nx.draw_networkx_nodes(G,positions,nodelist=[str(layer)+'_'+str(node)],node_color=c[layer],node_size=450,alpha=1,linewidths=1,node_shape='o')     
+                  nx.draw_networkx_nodes(G,positions,nodelist=[str(layer)+'_'+str(node)],node_color=c[layer],node_size=650,alpha=1,linewidths=1,node_shape='o')     
 plt.gcf().set_size_inches(10,10/1.6)
-nx.draw_networkx_labels(G,positions,labels_n,font_color='black',font_size=12)
-nx.draw_networkx_labels(G,positions,labels_b,font_color='white',font_size=12)
+nx.draw_networkx_labels(G,positions,labels_n,font_color='white',font_size=14)
+nx.draw_networkx_labels(G,positions,labels_b,font_color='white',font_size=14)
 nx.draw_networkx_edges(G,positions,edges,linewidth=0.5,alpha=0.5)
 
 pos = [0.8,0.75,0.8]
 for l in labels_e.keys():
       for node in labels_e[l].values(): 
-            nx.draw_networkx_edge_labels(G,positions,edge_labels=node['edge'],label_pos=node['position'],bbox={'boxstyle':'square','facecolor':'white', 'alpha':0.85, 'pad':0,'lw':0},font_size=8)
+            nx.draw_networkx_edge_labels(G,positions,edge_labels=node['edge'],label_pos=node['position'],bbox={'boxstyle':'square','facecolor':'white', 'alpha':0.85, 'pad':0,'lw':0},font_size=10)
 
 bottom = -0.6
 top = 0.7
@@ -117,4 +117,4 @@ plt.gca().text(-1.25,0.509,'bias',fontsize=12,ha='center',va='center',rotation=9
 plt.gca().get_xaxis().set_ticks([])
 plt.gca().get_yaxis().set_ticks([])
 plt.axis('off')
-plt.tight_layout(rect=[0.05,0.05,0.95,0.95])
+plt.tight_layout(rect=[0.025,0.025,0.975,0.975])
