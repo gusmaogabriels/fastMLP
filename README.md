@@ -10,9 +10,20 @@
    - *Prof. Dr. Levy Boccato; Prof. Dr. Fernando Von Zuben.*
 
 ### Overview
-Multi-layer perceptron (MLP) Artificial Neural Network (ANN).  
+Fully Connected Multi-layer perceptron (MLP) Artificial Neural Network (ANN).  
 Batch-mode training with k-fold strategy, memory-mapped files using [numpy](http://www.numpy.org/)'s [*memmap*](https://br.linkedin.com/pub/gabriel-saben%C3%A7a-gusm%C3%A3o/115/aa6/aa8).  
 Training as of the [Conjugate Gradient](https://github.com/gusmaogabriels/optinpy#conjugate-gradient-methodconjugate-gradient) algorithm, exact derivatives and *H*×*p* calculations by backpropagation (BP).  
+
+**A fully connected two-hidden layer MLP ANN with 4 and 3 neuron in each, 3 inputs and 3 outputs.**
+
+ ```python  
+import fastMLP as mlp
+
+# instantiates the MLP class, with two hidden layers with 4 and 3 neurons in each	 
+mlp_classifier = mlp.MLP('myMLP',hidden_layers=[4,3]) 
+```
+
+![Alt Text](/raw/MLP.png)	
 
 ### Examples
 

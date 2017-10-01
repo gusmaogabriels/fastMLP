@@ -560,11 +560,3 @@ class MLP(object):
             #plt.gca().set_title('Evolution of the quadratic error along training - folder = {:d}'.format(folder))
             #plt.gca().set_xlabel('Epochs')
             #plt.gca().set_ylabel('Quadratic error')
-   
-#ANN = MLP('Evol2',[10])
-#ANN.load_data('xtraining.npz','xtesting.npz',[])
-#ANN.init_weights()
-#ANN.init_folds(5)
-#ANN.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.95,cut = 0.25)
-#ANN.gen_k_folds('xtraining.npz',5)
-#ANN.train()
