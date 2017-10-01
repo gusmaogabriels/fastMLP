@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Sep 28 18:58:10 2017
-
 @author: GABRIS46
 """
 
@@ -55,7 +54,7 @@ labels_b = {}
 labels_e = {}
 
 for layer in range(len(nlayers)-1):
-      pos0 = 0.75
+      pos0 = 0.55
       delta = 0.65/(nlayers[layer])
       labels_e[layer] = {}
       if layer  == len(nlayers)-2:
@@ -101,7 +100,7 @@ nx.draw_networkx_edges(G,positions,edges,linewidth=0.5,alpha=0.5)
 
 pos = [0.8,0.75,0.8]
 for l in labels_e.keys():
-      for node in labels_e[l].values(): 
+      for node in [labels_e[l].values()[0]]: 
             nx.draw_networkx_edge_labels(G,positions,edge_labels=node['edge'],label_pos=node['position'],bbox={'boxstyle':'square','facecolor':'white', 'alpha':0.85, 'pad':0,'lw':0},font_size=10)
 
 bottom = -0.6
