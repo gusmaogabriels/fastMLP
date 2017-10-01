@@ -6,9 +6,7 @@ Created on Fri Sep 15 11:08:59 2017
 """
 
 from . import os as _os
-from . import shutil as _shutil
 from . import np as _np
-from . import re as _re
 from . import tempfile as _tf
 from . import time as _time
 

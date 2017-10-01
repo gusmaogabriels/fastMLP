@@ -8,8 +8,6 @@ Created on Fri Sep 15 11:08:59 2017
 from . import os as _os
 from . import np as _np
 from . import time as _time
-from . import shutil as _shutil
-from . import re as _re
 from .import tempfile as _tf
 
 """
@@ -36,10 +34,6 @@ class LinearClassifier(object):
       
       def __init__(self,train_fl,test_fl,holdout):
             
-            
-            self._curpath = _tf.getcwd()
-            self._temp_path = _tf.mksdir(dor=self._curpath)
-            _os.mkdir(self._temp_path)
             self.time = []
                        
             data = _np.load(train_fl)
@@ -145,8 +139,6 @@ class LinearClassifier(object):
 class ELM(LinearClassifier):
       
       def __init__(self,train_fl,test_fl,holdout):
-            self._curpath = _tf.getcwd()
-            self._temp_path = _tf.mksdir(dor=self._curpath)
             self.time = []
             self.n_hidden_neurons = []
             self.fun = []
@@ -186,7 +178,7 @@ class ELM(LinearClassifier):
                   self.mHtH.resize((self.n_hidden_neurons,self.n_hidden_neurons))
                   self.mHtS.resize((self.n_hidden_neurons,_.S.shape[1]))
             
-      def gen_randhiddenlayer(self,interval,fun):
+      def gen_random_layer(self,interval,fun):
             
             self.fun = fun
             self.Whidden[:] = _np.random.uniform(interval[0],interval[1],(self.n_hidden_neurons,self.linclassifier.X.shape[1]))
