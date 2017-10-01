@@ -18,7 +18,19 @@ import numpy as np
 import os
 import shutil
 import time
-import fastMLP
-import linClassifier
+import re
+import tempfile
+from .fastMLP import MLP
+from .linearClassifier import LinearClassifier, ELM
 
-__all__ = ['np','__author__','__version__']
+for _ in os.listdir(os.getcwd()):
+      if re.match('_temp_*',_):
+            try:
+                  shutil.rmtree(_)
+            except:
+                  print('Could not delete {}'.format(_))
+      else:
+            pass
+        
+
+__all__ = ['np','__author__','__version__','os']

@@ -5,14 +5,13 @@ Created on Fri Sep 15 11:08:59 2017
 @author: Gabriel S. Gusmão, gusmaogabriels@gmail.com
 """
 
-import numpy as np
-import os
-import shutil
-import time
+from . import os as _os
+from . import shutil as _shutil
+from . import np as _np
+from . import re as _re
+from . import tempfile as _tf
+from . import time as _time
 
-for item in os.listdir(os.getcwd()):
-    if item.endswith(".temp"):
-        os.remove(item)
         
 class MLP(object):
     
@@ -41,26 +40,30 @@ class MLP(object):
             filename,
             n_hidden = [5,2]):
         
-        string = ''
-        self._curpath = os.getcwd()
-        self._temp_path = self._curpath + '\\temp{}'.format(string)
-        if 'temp{}'.format(string) in os.listdir(os.getcwd()):
-                    shutil.rmtree('temp{}'.format(string))
-        else:
-              pass
-        if 'Networks' in os.listdir(os.getcwd()):
-              if '{}_MLP'.format(filename) in os.listdir(os.getcwd()+'\\Networks'):
+        self._curpath = _os.getcwd()
+        #self._temp_path = _tf.mkdtemp(dir=self._curpath)
+        """
+        for _ in _os.listdir(_os.getcwd()):
+              if _re.match('_temp_*',_):
+                  try:
+                        _shutil.rmtree(_)
+                  except:
+                        print('Could not delete {}'.format(_))
+              else:
+                    pass
+        """
+        if 'Networks' in _os.listdir(_os.getcwd()):
+              if '{}_MLP'.format(filename) in _os.listdir(_os.getcwd()+'\\Networks'):
                     raise Exception('Filename already exists')
               else:
-                    os.mkdir('Networks/{}_MLP'.format(filename)) 
+                    _os.mkdir('Networks/{}_MLP'.format(filename)) 
         else:
-              os.mkdir('Networks'.format(filename))
-              os.mkdir('Networks/{}_MLP'.format(filename))
-        os.mkdir('temp{}'.format(string))
-        os.mkdir('temp{}/XYtrain'.format(string))
-        os.mkdir('temp{}/XYtest'.format(string))
-        os.mkdir('temp{}/XY'.format(string))
-        os.mkdir('temp{}/W'.format(string))
+              _os.mkdir('Networks'.format(filename))
+              _os.mkdir('Networks/{}_MLP'.format(filename))
+        #_os.mkdir(self._temp_path+'/XYtrain')
+        #_os.mkdir(self._temp_path+'/XYtest')
+        #_os.mkdir(self._temp_path+'/XY')
+        #_os.mkdir(self._temp_path+'/W')
           
         # Loading the training data (it is assumed that the range of the
         # training data is adequate. If not, they have to be normalized).
@@ -159,52 +162,52 @@ class MLP(object):
         self.__haschanged__ = {'validation':True,'training':True,'testing':True}
         self.__class_position__ = {'validation':{},'training':{},'testing':{}}
         
-        self.transf_fun = np.tanh
+        self.transf_fun = _np.tanh
         self.transf_fund = lambda y : 1.-y**2
 
     def load_data(self,data_training,data_testing,data_weights=[]):
         self.data_training = data_training
-        _ = np.load(data_training,mmap_mode='r')
-        self.Ntotal = np.shape(_['X'])[0]
-        self.n_in = np.shape(_['X'])[1]
-        self.n_out = np.shape(_['S'])[1]
+        _ = _np.load(data_training,mmap_mode='r')
+        self.Ntotal = _np.shape(_['X'])[0]
+        self.n_in = _np.shape(_['X'])[1]
+        self.n_out = _np.shape(_['S'])[1]
         for i in ['X','S']:
-            self.__buffer__.__setitem__(i,np.memmap(self._temp_path+'\\XYtrain\\{}.temp'.format(i),np.float32,'w+',shape=np.shape(_[i])))
+            self.__buffer__.__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=_np.shape(_[i])))
             self.__buffer__[i][:] = _[i]
         _.close()
         self.data_testing = data_testing
-        _ = np.load(data_testing,mmap_mode='r')
-        self.Ntest  = np.shape(_['X'])[0]
+        _ = _np.load(data_testing,mmap_mode='r')
+        self.Ntest  = _np.shape(_['X'])[0]
         for i in ['X','S']:
-            self.__buffer__.__setitem__(i+'test',np.memmap(self._temp_path+'\\XYtest\\{}_test.temp'.format(i),np.float32,'w+',shape=np.shape(_[i])))
+            self.__buffer__.__setitem__(i+'test',_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=_np.shape(_[i])))
             self.__buffer__[i+'test'][:] = _[i]
         _.close()
         self.Xtesting = self.__buffer__['Xtest']
         self.Stesting = self.__buffer__['Stest']
-        list0 = np.argmax(self.Stesting,axis=1)
+        list0 = _np.argmax(self.Stesting,axis=1)
         for i in range(len(self.Stesting[0,:])):
-              self.__class_position__['testing'].__setitem__(i,set(np.where(list0==i)[0]))
+              self.__class_position__['testing'].__setitem__(i,set(_np.where(list0==i)[0]))
         self.__buffer__['XYtest'].__setitem__(0,self.Xtesting)
         self._partition_wrapper['testing'] = [self.Xtest,self.Ytest,self.Stesting]
         
         ### allocate W, dW and rW spaces
         n_in = self.n_in
         for i in range(len(self.n_hidden)):
-              self.__buffer__['Wopt'].__setitem__(i,np.memmap(self._temp_path+'\\W\\Wopt_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['Winit'].__setitem__(i,np.memmap(self._temp_path+'\\W\\Winit_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['W'].__setitem__(i,np.memmap(self._temp_path+'\\W\\W_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['W0'].__setitem__(i,np.memmap(self._temp_path+'\\W\\W0_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['dW'].__setitem__(i,np.memmap(self._temp_path+'\\W\\dW_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['dW0'].__setitem__(i,np.memmap(self._temp_path+'\\W\\dW0_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
-              self.__buffer__['rW'].__setitem__(i,np.memmap(self._temp_path+'\\W\\rW_{}.temp'.format(i),np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['Wopt'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['Winit'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['W'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['W0'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['dW'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['dW0'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
+              self.__buffer__['rW'].__setitem__(i,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_hidden[i],n_in+1)))
               n_in = self.n_hidden[i]
-        self.__buffer__['Wopt'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\Wopt_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['Winit'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\Winit_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['W'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\W_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['W0'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\W0_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['dW'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\dW_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['dW0'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\dW0_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.__buffer__['rW'].__setitem__(i+1,np.memmap(self._temp_path+'\\W\\rW_{}.temp'.format(self.out_layer),np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['Wopt'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['Winit'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['W'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['W0'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['dW'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['dW0'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
+        self.__buffer__['rW'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
         self.stw = dict([[i,[]] for i in range(len(self.n_hidden)+1)])
         if data_weights:
               self.data_weights = data_weights
@@ -214,7 +217,7 @@ class MLP(object):
     def init_folds(self,n_folds):
         self.k_folds = n_folds
         self.__folders__ = dict([[i,self.fold_dict_generator()] for i in range(self.k_folds)])   # k-folds results dictionary (per fold)
-        self.randperm = np.random.permutation(self.Ntotal) # random partitionsing
+        self.randperm = _np.random.permutation(self.Ntotal) # random partitionsing
         n = self.Ntotal/self.k_folds
         for i in range(self.k_folds-1):
             self.__folders__[i]['indices'] = self.randperm[n*i:n*(i+1)]
@@ -241,36 +244,36 @@ class MLP(object):
         self.Nvalidation = len(ind_validation)
         
         # memory mapping for the  training and validation sets
-        self.Xtraining = np.memmap(self._temp_path+'\\XY\\Xtraining.temp',np.float32,'w+',shape=(self.Ntraining,self.n_in+1))
+        self.Xtraining = _np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,self.n_in+1))
         self.Xtraining[:,:-1] = self.__buffer__['X'][list(ind_training),:]
         self.Xtraining[:,-1] = 1 
-        self.Straining = np.memmap(self._temp_path+'\\XY\\Straining.temp',np.float32,'w+',shape=(self.Ntraining,self.n_out))
+        self.Straining = _np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,self.n_out))
         self.Straining[:] = self.__buffer__['S'][list(ind_training),:]
-        self.Xvalidation = np.memmap(self._temp_path+'\\XY\\Xvalidation.temp',np.float32,'w+',shape=(self.Nvalidation,self.n_in+1))
+        self.Xvalidation = _np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Nvalidation,self.n_in+1))
         self.Xvalidation[:,:-1] = self.__buffer__['X'][list(ind_validation),:]
         self.Xvalidation[:,-1] = 1
-        self.Svalidation = np.memmap(self._temp_path+'\\XY\\Svalidation.temp',np.float32,'w+',shape=(self.Nvalidation,self.n_out))
+        self.Svalidation = _np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Nvalidation,self.n_out))
         self.Svalidation[:] = self.__buffer__['S'][list(ind_validation),:]
         
         # assign mapped references their respect buffer dictionaries
         self.__buffer__['XY'].__setitem__(0,self.Xtraining)
         self.__buffer__['XYval'].__setitem__(0,self.Xvalidation)
-        self.__buffer__['rXY'].__setitem__(0,np.memmap(self._temp_path+'\\XY\\rxy_0.temp'.format(i),np.float32,'w+',shape=(self.Ntraining,self.n_in+1)))
+        self.__buffer__['rXY'].__setitem__(0,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,self.n_in+1)))
         ##############self.__buffer__['rXY'][0][:,-1] = 1
         self._partition_wrapper['validation'] =  [self.Xval,self.Yval,self.Svalidation]
         self._partition_wrapper['training'] =  [self.X,self.Y,self.Straining]
         for k in [[self.Svalidation,'validation'],[self.Straining,'training']]:
-              list0 = np.argmax(k[0],axis=1)
+              list0 = _np.argmax(k[0],axis=1)
               for i in range(len(k[0][0,:])):
-                    self.__class_position__[k[1]].__setitem__(i,set(np.where(list0==i)[0].tolist()))
+                    self.__class_position__[k[1]].__setitem__(i,set(_np.where(list0==i)[0].tolist()))
         j = 1
         for n in self.n_hidden+[self.n_out]:
-            self.__buffer__['XY'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\xy_{}.temp'.format(j),np.float32,'w+',shape=(self.Ntraining,n+1)))
-            self.__buffer__['rXY'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\rxy_{}.temp'.format(j),np.float32,'w+',shape=(self.Ntraining,n+1)))
-            self.__buffer__['XYval'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\xyval_{}.temp'.format(j),np.float32,'w+',shape=(self.Nvalidation,n+1)))
-            self.__buffer__['XYtest'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\xytest_{}.temp'.format(j),np.float32,'w+',shape=(self.Ntest,n+1)))
-            self.__buffer__['error'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\error_{}.temp'.format(j),np.float32,'w+',shape=(self.Ntraining,n)))
-            self.__buffer__['rerror'].__setitem__(j,np.memmap(self._temp_path+'\\XY\\rerror_{}.temp'.format(j),np.float32,'w+',shape=(self.Ntraining,n)))
+            self.__buffer__['XY'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,n+1)))
+            self.__buffer__['rXY'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,n+1)))
+            self.__buffer__['XYval'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Nvalidation,n+1)))
+            self.__buffer__['XYtest'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntest,n+1)))
+            self.__buffer__['error'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,n)))
+            self.__buffer__['rerror'].__setitem__(j,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.Ntraining,n)))
             self.__buffer__['XY'][j][:,-1] = 1
             self.__buffer__['rXY'][j][:,-1] = 1
             self.__buffer__['XYval'][j][:,-1] = 1
@@ -281,11 +284,11 @@ class MLP(object):
     def init_weights(self):
         if not self.data_weights:
             for k in self.__buffer__['W'].keys():
-                self.__buffer__['W'][k][:] = -0.1 + 0.2*np.random.rand(*self.__buffer__['W'][k].shape)
+                self.__buffer__['W'][k][:] = -0.1 + 0.2*_np.random.rand(*self.__buffer__['W'][k].shape)
                 self.__buffer__['W0'][k][:] = self.__buffer__['W'][k][:]
                 self.__buffer__['Winit'][k][:] = self.__buffer__['W'][k][:]
         else:
-            _ = np.load(self.data_weights,mmap_mode='r')['W']
+            _ = _np.load(self.data_weights,mmap_mode='r')['W']
             for i in _.keys():
                   self.__buffer__['W'][i] = _[i]
                   self.__buffer__['W0'][i] = _[i]
@@ -310,14 +313,14 @@ class MLP(object):
             CER_c = {}
             for i in self.__class_position__[mode].keys():
                   ind = list(self.__class_position__[mode][i])
-                  CER_c.__setitem__(i,1.-sum((np.argmax(y[self.out_layer][ind],axis=1)==np.argmax(S[ind],axis=1))*1.)/float(len(ind)))
-            CER = np.mean(CER_c.values())
+                  CER_c.__setitem__(i,1.-sum((_np.argmax(y[self.out_layer][ind],axis=1)==_np.argmax(S[ind],axis=1))*1.)/float(len(ind)))
+            CER = _np.mean(CER_c.values())
             return CER, CER_c           
         else:
             raise Exception("'mode = 'training' or 'validation' or 'testing'")
             
     def save_net(self,filename):
-          np.savez_compressed(filename,
+          _np.savez_compressed(filename,
                               name = __name__,
                               data={'W':self.__buffer__['W'],
                                     'Wopt':self.__buffer__['Wopt'],
@@ -330,10 +333,10 @@ class MLP(object):
                                      'randperm':self.randperm})
           
     def save_weights(self,filename):
-          np.savez_compressed(filename,Wopt=self.__buffer__['Wopt'])
+          _np.savez_compressed(filename,Wopt=self.__buffer__['Wopt'])
 
     def load_net(self,filename):
-         data = np.load(filename+'.npz')
+         data = _np.load(filename+'.npz')
          #self.__name__ = data['name']
          self.__init__(**data['init'].tolist())
          self.load_data(*[data['data'].tolist()['XStraining'],data['data'].tolist()['XStesting'],data['data'].tolist()['Winit']])
@@ -348,7 +351,7 @@ class MLP(object):
          
     def reset_status(self):
           if self.__isloaded__:
-                data = np.load(self.__name__+'.npz')
+                data = _np.load(self.__name__+'.npz')
                 self.__folders__ = data['kfolds'].tolist()
           else:
                 self.__folders__ = self.__folders__ = dict([[i,self.fold_dict_generator()] for i in range(self.k_folds)])   # k-folds results dictionary (per fold)
@@ -394,12 +397,12 @@ class MLP(object):
         error[self.out_layer+1][:] = y[self.out_layer]-S
         dw[self.out_layer][:] = error[self.out_layer+1].T.dot(x[self.out_layer])
         for j in list.__reversed__(range(self.out_layer)):
-              error[j+1][:] = np.dot(error[j+2],w[j+1][:,:-1])*self.transf_fund(y[j])
+              error[j+1][:] = _np.dot(error[j+2],w[j+1][:,:-1])*self.transf_fund(y[j])
               dw[j][:] = error[j+1].T.dot(x[j])
 
         Ew = 0.5*(error[self.out_layer+1].flatten('F').T.dot(error[self.out_layer+1].flatten('F'))) # total error ²
-        dEw = np.concatenate(([dw[i].flatten('F') for i in range(self.out_layer+1)])) # dw, gradient
-        eqm = np.sqrt((1./(self.Ntraining*self.n_out))*Ew) 
+        dEw = _np.concatenate(([dw[i].flatten('F') for i in range(self.out_layer+1)])) # dw, gradient
+        eqm = _np.sqrt((1./(self.Ntraining*self.n_out))*Ew) 
         return [Ew,dEw,eqm]
     
     """
@@ -425,19 +428,19 @@ class MLP(object):
               rerror[j+1][:] = (rerror[j+2].dot(w[j+1][:,:-1]) + error[j+2].dot(dw[j+1][:,:-1]))*self.transf_fund(y[j])+(error[j+2].dot(w[j+1][:,:-1]))*(-2*y[j]*ry[j])
               rw[j][:] = error[j+1].T.dot(rx[j])+rerror[j+1].T.dot(x[j])   
 
-        rEw = np.concatenate(([rw[i].flatten('F') for i in range(self.out_layer+1)])) # dw, gradient
+        rEw = _np.concatenate(([rw[i].flatten('F') for i in range(self.out_layer+1)])) # dw, gradient
         s = rEw
         return s
     
     def qmean2(self):
         w = self.W
-        v = np.concatenate(([w[i].flatten('F') for i in range(self.__buffer__['W'].__len__())]))  
+        v = _np.concatenate(([w[i].flatten('F') for i in range(self.__buffer__['W'].__len__())]))  
         n_v = len(v)
-        rms = np.sqrt((v**2).sum()/n_v)
+        rms = _np.sqrt((v**2).sum()/n_v)
         return rms
     
     def m_norm(self,S):
-        E = np.sqrt((S**2).sum()/S.size);
+        E = _np.sqrt((S**2).sum()/S.size);
         return E
     
     ### BASED ON 
@@ -456,7 +459,7 @@ class MLP(object):
             self.set_fold(k)  #    
             folder = self.__folders__[k] # reference current folder in __folds__ dictionary
             self.reset_weights() # either assigns the current best weight for a loaded net or generate random ones
-            t = time.time() # tic toc
+            t = _time.time() # tic toc
             
             w, rw, dw, w0, dw0 = [self.W, self.rW, self.dW, self.W0, self.dW0] # for easy reference herein on
             
@@ -538,7 +541,7 @@ class MLP(object):
                     self.lock() # copy current W to W0
                     self.__haschanged__['training'] = True
                     self.__haschanged__['validation'] = True
-                    folder['training_time'].append(time.time()-t)
+                    folder['training_time'].append(_time.time()-t)
                 else:
                     blambda = v_lambda[-1]
                     success = 0
@@ -560,10 +563,10 @@ class MLP(object):
             #plt.gca().set_xlabel('Epochs')
             #plt.gca().set_ylabel('Quadratic error')
    
-ANN = MLP('Evol2',[10])
-ANN.load_data('xtraining.npz','xtesting.npz',[])
-ANN.init_weights()
-ANN.init_folds(5)
-ANN.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.95,cut = 0.25)
+#ANN = MLP('Evol2',[10])
+#ANN.load_data('xtraining.npz','xtesting.npz',[])
+#ANN.init_weights()
+#ANN.init_folds(5)
+#ANN.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.95,cut = 0.25)
 #ANN.gen_k_folds('xtraining.npz',5)
 #ANN.train()
