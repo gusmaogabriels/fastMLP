@@ -14,7 +14,9 @@ Fully Connected Multi-layer perceptron (MLP) Artificial Neural Network (ANN).
 Batch-mode training with k-fold strategy, memory-mapped files using [numpy](http://www.numpy.org/)'s [*memmap*](https://br.linkedin.com/pub/gabriel-saben%C3%A7a-gusm%C3%A3o/115/aa6/aa8).  
 Training as of the [Conjugate Gradient](https://github.com/gusmaogabriels/optinpy#conjugate-gradient-methodconjugate-gradient) algorithm, exact derivatives and *H*×*p* calculations by backpropagation (BP).  
 
-**A fully connected two-hidden layer MLP ANN with 4 and 3 neuron in each, 3 inputs and 3 outputs.**
+### Examples
+
+#### **A fully connected two-hidden layer MLP ANN with 4 and 3 neuron in each, 3 inputs and 3 outputs.**
 
  ```python  
 import fastMLP as mlp
@@ -23,10 +25,9 @@ import fastMLP as mlp
 mlp_classifier = mlp.MLP('myMLP',hidden_layers=[4,3]) 
 ```
 
-![Alt Text](/raw/MLP.png)	
+![Alt Text](/raw/MLP.png)
 
-### Examples
-
+#### **MNIST Handwritten Digits Classification**
 *from MNIST [sample digits database](/Examples/MNIST)*
 
 #### Linear Classifier
@@ -51,16 +52,7 @@ lin_classifier.error('test')
 ```
 	 
 	 >> (0.142357652,
-		[0.041836734,
-		0.024669603,
-		0.212209302,
-		0.128712871,
-		0.102851323,
-		0.265695067,
-		0.083507306,
-		0.142023346,
-		0.224845995,
-		0.197224975])
+		[0.0418367,0.0246696,0.2122093,0.1287128,0.1028513,0.2656950,0.0835073,0.1420233,0.2248459,0.1972249])
 	 
 #### Extreme-Learning Machine (ELM)
 
@@ -78,17 +70,8 @@ elm_classifier.set_W(c=1e-10)
 elm_classifier.error('test') 
 ```
 	 
-	 >> (0.016326531,
-		[0.010572687,
-		0.055232558,
-		0.044554455,
-		0.039714868,
-		0.043721973,
-		0.025052192,
-		0.059338521,
-		0.05338809,
-		0.073339941,
-		0.042124182])
+	 >> (0.0163265,
+		[0.0105726,0.0552325,0.0445544,0.0397148,0.0437219,0.0250521,0.0593385,0.053388,0.0733399,0.0421241])
 
 ![Alt Text](/raw/elm_lin.png)	
 
