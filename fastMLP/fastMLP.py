@@ -102,7 +102,7 @@ class MLP(object):
         """
         self.fold_dict_generator = lambda : {'CERv':[],
                                         'CER_min':[],
-                                        'stw':[],
+                                        'stw': dict([[i,[]] for i in range(len(self.n_hidden)+1)]),
                                         'rms_w':[],                                        
                                         'epoch':0, # epoch
                                         'niter_v':0,
@@ -176,9 +176,11 @@ class MLP(object):
         self.data_testing = data_testing
         _ = _np.load(data_testing,mmap_mode='r')
         self.Ntest  = _np.shape(_['X'])[0]
-        for i in ['X','S']:
-            self.__buffer__.__setitem__(i+'test',_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=_np.shape(_[i])))
-            self.__buffer__[i+'test'][:] = _[i]
+        self.__buffer__.__setitem__('Xtest',_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(_['X'].shape[0],_['X'].shape[1]+1)))
+        self.__buffer__['Xtest'][:,:-1] = _['X']
+        self.__buffer__['Xtest'][:,-1] = 1
+        self.__buffer__.__setitem__('Stest',_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=_['S'].shape))
+        self.__buffer__['Stest'][:] = _['S']
         _.close()
         self.Xtesting = self.__buffer__['Xtest']
         self.Stesting = self.__buffer__['Stest']
@@ -206,7 +208,6 @@ class MLP(object):
         self.__buffer__['dW'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
         self.__buffer__['dW0'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
         self.__buffer__['rW'].__setitem__(i+1,_np.memmap(_tf.NamedTemporaryFile(),_np.float32,'w+',shape=(self.n_out,self.n_hidden[-1]+1)))
-        self.stw = dict([[i,[]] for i in range(len(self.n_hidden)+1)])
         if data_weights:
               self.data_weights = data_weights
         else:
@@ -220,6 +221,8 @@ class MLP(object):
         for i in range(self.k_folds-1):
             self.__folders__[i]['indices'] = self.randperm[n*i:n*(i+1)]
         self.__folders__[i+1]['indices'] = self.randperm[n*(self.k_folds-1):]
+        for h in range(len(self.n_hidden)):
+              self.__folders__[h]['stw'] = dict([[i,[]] for i in range(len(self.n_hidden)+1)])
             
     def set_fold(self,folder):
         for i in [self.__getattribute__(j) for j in ['Xtraining','Straining','Xvalidation','Svalidation']]:
@@ -336,15 +339,16 @@ class MLP(object):
     def load_net(self,filename):
          data = _np.load(filename+'.npz')
          #self.__name__ = data['name']
-         self.__init__(**data['init'].tolist())
+         self.__init__(filename+'_loaded',data['init'].tolist())
          self.load_data(*[data['data'].tolist()['XStraining'],data['data'].tolist()['XStesting'],data['data'].tolist()['Winit']])
          for i in data['data'].tolist()['Wopt'].keys():
                self.__buffer__['Wopt'][i][:] = data['data'].tolist()['Wopt'][i]
          for i in data['data'].tolist()['W'].keys():
-               self.__buffer__['W'][i][:] = data['data'].tolist()['W'][i] 
-         self.___folds__= data['kfolds'].tolist().tolist()
+               self.__buffer__['W'][i][:] = data['data'].tolist()['Wopt'][i] 
+         self.__folders__= data['kfolds'].tolist()
          for i in data['folds'].tolist().keys():
-               self.__setattr__(i,data['folds'].tolist()[i])
+               self.__setattr__(i,data['folds'].tolist()[i])  
+         self.k_folds = len(data['kfolds'].tolist())      
          self.__isloaded__ = True
          
     def reset_status(self):
@@ -514,8 +518,8 @@ class MLP(object):
                     CER = CER1 
                     folder['CERv'].append(CER)
                     dEw = dEw1
-                    for i in range(self.stw.__len__()):
-                          self.stw[i].append(self.m_norm(w0[i]-w[i]))
+                    for i in range(folder['stw'].__len__()):
+                          folder['stw'][i].append(self.m_norm(w0[i]-w[i]))
                     folder['rms_w'].append(self.qmean2())
                     folder['error_per_class_v'].append(error_per_class1)
                     eqm_fim = eqm1

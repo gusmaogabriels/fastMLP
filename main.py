@@ -10,7 +10,8 @@ import numpy as np
 import fastMLP
 import pandas as pd
 
-                    
+
+os.chdir(r'C:\Users\gabris46\Desktop\Gabriel S. Gusmao\GitHub\fastMLP\Networks\Evol22[1 3 2 0 0 7 0 0 1 7]_MLP')                    
 training_path = os.getcwd()+r'//Examples//MNIST\\xtraining.npz'
 testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
     
@@ -31,8 +32,11 @@ testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
 
 
 
-ANN = fastMLP.MLP('Evol22'+str(np.random.randint(0,9,10)),[100,100,100,100])
-ANN.load_data(training_path,testing_path,[])
-ANN.init_weights()
-ANN.init_folds(5)
-ANN.train(threshold = 1.0e-5, n_itermax = 1500,rate0 = 0.25,cut = 0.25)
+ANN = fastMLP.MLP('Evol2222'+str(np.random.randint(0,9,10)),[100,100,100,100])
+ANN.load_net('Evol22[1 3 2 0 0 7 0 0 1 7]_4')
+ANN.set_fold(4)
+#ANN.load_data(training_path,testing_path,[])
+#ANN.init_weights()
+#ANN.init_folds(5)
+#ANN.set_fold(0)
+#ANN.train(threshold = 1.0e-5, n_itermax = 1500,rate0 = 0.25,cut = 0.25)
