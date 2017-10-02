@@ -230,7 +230,7 @@ class MLP(object):
                     i._mmap.close()
               else:
                     pass
-        for j in ['XY','rXY','XYval','XYtest','error','rerror']:
+        for j in ['XY','rXY','XYval','error','rerror']:
               for i in self.__buffer__[j].values():
                     if len(i):
                           i._mmap.close()
@@ -280,7 +280,6 @@ class MLP(object):
             self.__buffer__['XYval'][j][:,-1] = 1
             self.__buffer__['XYtest'][j][:,-1] = 1
             j+=1
-            
 
     def init_weights(self):
         if not self.data_weights:

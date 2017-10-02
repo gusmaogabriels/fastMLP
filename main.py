@@ -32,7 +32,7 @@ testing_path = os.getcwd()+r'///Examples//MNIST\\xtesting.npz'
 
 
 
-ANN = fastMLP.MLP('Evol2222'+str(np.random.randint(0,9,10)),[100,100,100,100])
+ANN = fastMLP.MLP('Evol2'+str(np.random.randint(0,9,10)),[100,100,100,100])
 ANN.load_net('Evol22[1 3 2 0 0 7 0 0 1 7]_4')
 ANN.set_fold(4)
 #ANN.load_data(training_path,testing_path,[])

@@ -88,8 +88,10 @@ mlp_classifier.init_weights()
 # set the (k=5)-folds problem by partitioning the training set
 mlp_classifier.init_folds(5) 
 # begin the k-fold training session
-mlp_classifier.train(threshold = 1.0e-5, n_itermax = 50,rate0 = 0.25,cut = 0.25) 
+mlp_classifier.train(threshold = 1.0e-5, n_itermax = 1000, rate0 = 0.25,cut = 0.25) 
 ```
+
+![Alt Text](/raw/MLP2.png)	
 
 ### Requirements
 1. [numpy](http://www.numpy.org/)
