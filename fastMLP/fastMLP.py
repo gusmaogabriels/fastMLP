@@ -52,7 +52,10 @@ class MLP(object):
         """
         if 'Networks' in _os.listdir(_os.getcwd()):
               if '{}_MLP'.format(filename) in _os.listdir(_os.getcwd()+'\\Networks'):
-                    raise Exception('Filename already exists')
+                    i = 0
+                    while '{}_{}_MLP'.format(filename,i) in _os.listdir(_os.getcwd()+'\\Networks'):
+                          i += 1
+                    _os.mkdir('Networks/{}_{}_MLP'.format(filename,i)) 
               else:
                     _os.mkdir('Networks/{}_MLP'.format(filename)) 
         else:
@@ -221,7 +224,7 @@ class MLP(object):
         for i in range(self.k_folds-1):
             self.__folders__[i]['indices'] = self.randperm[n*i:n*(i+1)]
         self.__folders__[i+1]['indices'] = self.randperm[n*(self.k_folds-1):]
-        for h in range(len(self.n_hidden)):
+        for h in range(self.k_folds):
               self.__folders__[h]['stw'] = dict([[i,[]] for i in range(len(self.n_hidden)+1)])
             
     def set_fold(self,folder):
@@ -376,6 +379,17 @@ class MLP(object):
           for j in ['W','dW']:
                 for i in self.__buffer__[j].keys():
                       self.__buffer__[j+'0'][i][:] = self.__buffer__[j][i][:]
+                      
+    def predict(self, x):
+        w = self.W
+        y = {-1:x}
+        for i in range(self.out_layer):
+            y[i] = self.transf_fun(y[i-1].dot(w[i][:,:-1].T)) # hidden layers
+            y[i] += w[i][:,-1].T
+        y[self.out_layer] = y[self.out_layer-1].dot(w[self.out_layer][:,:-1].T) 
+        y[self.out_layer] += w[self.out_layer][:,-1].T
+        return y[self.out_layer]
+                  
 
     
     """
@@ -507,7 +521,8 @@ class MLP(object):
                 comp.append((Ew-Ew1)/(-dEw.T.dot(alpha*p)-0.5*((alpha**2)*delta)))
                 #	In replacement to comp(it2) = 2*delta*(Ew-Ew1)/(mi^2); (is the same)
                 if comp[-1] > 0:
-                    print 'Classification Error (folder: {}, epoch: {}): Validation {}, Training {}'.format(k,folder['epoch'],CER1,self.f_CER('training')[0])
+                    print 'Classification Error (folder: {}, epoch: {}): Validation {}, Training {}, MSE {}'\
+                    .format(k,folder['epoch'],CER1,self.f_CER('training')[0],eqm1)
                     Ew = Ew1; folder['eq'].append(Ew)
                     if CER1 < folder['CER_min']:
                         folder['CER_min'] = CER1
@@ -551,8 +566,8 @@ class MLP(object):
                     rate = rate0
             print('Final mean squared error (training) = {} at iteration {}'.format(eqm_fim,folder['epoch']))
             print('Final CER (validation) = {} at iteration {}'.format(folder['CER_min'],folder['niter_v']))
-            self.save_net('Networks/{}_MLP/{}_{}'.format(self.__name__,self.__name__,k))
-            self.save_weights('Networks/{}_MLP/{}_vw_{}'.format(self.__name__,self.__name__,k))
+            self.save_net(_os.getcwd()+r'//Networks//{}_MLP//{}_{}'.format(self.__name__,self.__name__,k))
+            self.save_weights(_os.getcwd()+r'/Networks/{}_MLP/{}_vw_{}'.format(self.__name__,self.__name__,k))
             #plt.figure()
             #fig_CERv = plt.plot(self.CERv)
             #plt.gca().set_title('Evolution of the Classification Error Rate along training - folder = {:d}'.format(folder))
