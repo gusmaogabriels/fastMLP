@@ -36,7 +36,7 @@ class MLP(object):
         
     def __init__(self,
             filename,
-            n_hidden = [5,2]):
+            mode):
         
         self._curpath = _os.getcwd()
         #self._temp_path = _tf.mkdtemp(dir=self._curpath)
@@ -66,6 +66,14 @@ class MLP(object):
         #_os.mkdir(self._temp_path+'/XY')
         #_os.mkdir(self._temp_path+'/W')
           
+        if mode == 'classification':
+              self.ER = self.f_CER
+        elif mode == 'regression':
+              self.ER = self.f_RER
+        else:
+              raise Exception("mode must be either 'regression' or 'classification'.")
+        self.__mode__ = mode # cassification or validation
+        
         # Loading the training data (it is assumed that the range of the
         # training data is adequate. If not, they have to be normalized).
         # X (input matrix [N]x[m]) and S (output matrix [N]x[n_out])
@@ -92,8 +100,8 @@ class MLP(object):
         self.Nvalidation = 0
         
         # ANN parametric values
-        self.n_hidden = n_hidden
-        self.out_layer = len(self.n_hidden)
+        self.n_hidden = []
+        self.out_layer = []
         
         # Optimization aprameters
         self.k_folds = 0
@@ -103,13 +111,13 @@ class MLP(object):
         """
         old names
         """
-        self.fold_dict_generator = lambda : {'CERv':[],
-                                        'CER_min':[],
+        self.fold_dict_generator = lambda : {'ERv':[],
+                                        'ER_min':[],
                                         'stw': dict([[i,[]] for i in range(len(self.n_hidden)+1)]),
                                         'rms_w':[],                                        
                                         'epoch':0, # epoch
                                         'niter_v':0,
-                                        'error_per_class_v':[],
+                                        'error_per_v':[],
                                         'eq':[],
                                         'training_time':[],
                                         'indices':[]}
@@ -165,8 +173,34 @@ class MLP(object):
         
         self.transf_fun = _np.tanh
         self.transf_fund = lambda y : 1.-y**2
+        
+        self.__flags__ = [[False, '1. Define the structure (.set_structure)'], # structure
+                          [False, '2. Load data (.load_data)'], # load data
+                          [False, '3. Initialize k-fold (.init_folds)'], # init folds
+                          [False, '4. Initialize weights (.init_weights)']] # init folds
+    
+    def _checker(self,req_,def_=[]):
+          vec = range(req_+1) if isinstance(req_,(int,long,float)) else sorted(req_)
+          for i in vec:
+                if self.__flags__[i]:
+                      pass
+                else:
+                      exp = '\n Missing steps:\n'
+                      for j in range(i+1):
+                            exp += self.__flags__[j][1]+': {}'.format(self.__flags__[j][0])+'\n'
+                      raise Exception(exp)
+          if def_:
+                self.__flags__[def_] = True
+          else:
+                pass
+      
+        
+    def set_structure(self,n_hidden):
+        self.n_hidden = n_hidden
+        self.out_layer = len(self.n_hidden)
 
     def load_data(self,data_training,data_testing,data_weights=[]):
+        self._checker(0,1)
         self.data_training = data_training
         _ = _np.load(data_training,mmap_mode='r')
         self.Ntotal = _np.shape(_['X'])[0]
@@ -217,6 +251,7 @@ class MLP(object):
               pass
         
     def init_folds(self,n_folds):
+        self._checker(1,2)
         self.k_folds = n_folds
         self.__folders__ = dict([[i,self.fold_dict_generator()] for i in range(self.k_folds)])   # k-folds results dictionary (per fold)
         self.randperm = _np.random.permutation(self.Ntotal) # random partitionsing
@@ -226,8 +261,9 @@ class MLP(object):
         self.__folders__[i+1]['indices'] = self.randperm[n*(self.k_folds-1):]
         for h in range(self.k_folds):
               self.__folders__[h]['stw'] = dict([[i,[]] for i in range(len(self.n_hidden)+1)])
-            
+                    
     def set_fold(self,folder):
+        self._checker(2)
         for i in [self.__getattribute__(j) for j in ['Xtraining','Straining','Xvalidation','Svalidation']]:
               if len(i):
                     i._mmap.close()
@@ -285,6 +321,7 @@ class MLP(object):
             j+=1
 
     def init_weights(self):
+        self._checker(1,3)  
         if not self.data_weights:
             for k in self.__buffer__['W'].keys():
                 self.__buffer__['W'][k][:] = -0.1 + 0.2*_np.random.rand(*self.__buffer__['W'][k].shape)
@@ -299,32 +336,16 @@ class MLP(object):
             _.close()
                   
     def reset_weights(self):  
+        self._checker(3,0)  
         for k in self.__buffer__['W'].keys():
               self.__buffer__['W'][k][:] = self.__buffer__['Winit'][k][:]
               self.__buffer__['W0'][k][:] = self.__buffer__['Winit'][k][:]
-                     
-    def f_CER(self,mode):
-        """"
-        mode = 'training' or 'validation' or 'test'
-        """
-        if mode in ('training','validation','testing'):
-            if self.__haschanged__[mode]:
-                self.eval_net(mode)
-            else:
-                pass
-            x, y, S = self._partition_wrapper[mode]
-            CER_c = {}
-            for i in self.__class_position__[mode].keys():
-                  ind = list(self.__class_position__[mode][i])
-                  CER_c.__setitem__(i,1.-sum((_np.argmax(y[self.out_layer][ind],axis=1)==_np.argmax(S[ind],axis=1))*1.)/float(len(ind)))
-            CER = _np.mean(CER_c.values())
-            return CER, CER_c           
-        else:
-            raise Exception("'mode = 'training' or 'validation' or 'testing'")
             
     def save_net(self,filename):
+          self._checker(3) 
           _np.savez_compressed(filename,
                               name = __name__,
+                              mode = self.__mode__,
                               data={'W':self.__buffer__['W'],
                                     'Wopt':self.__buffer__['Wopt'],
                                     'Winit':self.__buffer__['Winit'],
@@ -336,6 +357,7 @@ class MLP(object):
                                      'randperm':self.randperm})
           
     def save_weights(self,filename):
+          self._checker(3) 
           _np.savez_compressed(filename,Wopt=self.__buffer__['Wopt'])
 
     def load_net(self,filename):
@@ -354,6 +376,7 @@ class MLP(object):
          self.__isloaded__ = True
          
     def reset_status(self):
+          self._checker([3]) 
           if self.__isloaded__:
                 data = _np.load(self.__name__+'.npz')
                 self.__folders__ = data['kfolds'].tolist()
@@ -391,19 +414,56 @@ class MLP(object):
         return y[self.out_layer]
                   
 
+    def f_CER(self,mode):
+        """"
+        mode = 'training' or 'validation' or 'test'
+        """
+        if mode in ('training','validation','testing'):
+            if self.__haschanged__[mode]:
+                self.eval_net(mode)
+            else:
+                pass
+            x, y, S = self._partition_wrapper[mode]
+            CER_c = {}
+            for i in self.__class_position__[mode].keys():
+                  ind = list(self.__class_position__[mode][i])
+                  CER_c.__setitem__(i,1.-sum((_np.argmax(y[self.out_layer][ind],axis=1)==_np.argmax(S[ind],axis=1))*1.)/float(len(ind)))
+            CER = _np.mean(CER_c.values())
+            return CER, CER_c           
+        else:
+            raise Exception("'mode = 'training' or 'validation' or 'testing'")
+            
+    def f_RER(self,mode):
+        """"
+        mode = 'training' or 'validation' or 'test'
+        """
+        if mode in ('training','validation','testing'):
+            if self.__haschanged__[mode]:
+                self.eval_net(mode)
+            else:
+                pass
+            x, y, S = self._partition_wrapper[mode]
+            error = y[self.out_layer]-S
+            RER_c = {} 
+            for  i in range(error.shape[1]):
+                  RER_c[i] = _np.sqrt(0.5*_np.dot(error[i].T,error[i])/(error.size))
+            RER = _np.mean(RER_c.values())
+            return RER, RER_c
+        else:
+            raise Exception("'mode = 'training' or 'validation' or 'testing'")
     
     """
     ADAPTED FROM
     % FEEC/Unicamp
     % 31/05/2017
-    % function [Ew,dEw,eqm,CER,error_per_class] = process(X,S,Xv,Sv,w1,w2)
+    % function [Ew,dEw,eqm,CER,error_per_class] = _process(X,S,Xv,Sv,w1,w2)
     % Output:  Ew: Squared error for the training dataset
     %          dEw: Gradient vector for the training dataset
     %          Ewv: Squared error for the validation dataset
     % Presentation of input-output patterns: batch mode
     % All neurons have bias
     """
-    def process(self):
+    def _process(self):
         self.eval_net('training')  
         x, y, S = self._partition_wrapper['training']
         w = self.W
@@ -424,10 +484,10 @@ class MLP(object):
     ADAPTED FROM
     # FEEC/Unicamp
     # 31/05/2017
-    # function [s] = hprocess(X,S,w1,w2,p1,p2)
+    # function [s] = _hprocess(X,S,w1,w2,p1,p2)
     # s = product H*p (computed exactly)
     """
-    def hprocess(self):  
+    def _hprocess(self):  
         self.eval_net('training')  
         x, y, S = self._partition_wrapper['training']
         rx, ry = [self.rX, self.rY]
@@ -447,7 +507,7 @@ class MLP(object):
         s = rEw
         return s
     
-    def qmean2(self):
+    def _qmean2(self):
         w = self.W
         v = _np.concatenate(([w[i].flatten('F') for i in range(self.__buffer__['W'].__len__())]))  
         n_v = len(v)
@@ -479,13 +539,13 @@ class MLP(object):
             w, rw, dw, w0, dw0 = [self.W, self.rW, self.dW, self.W0, self.dW0] # for easy reference herein on
             
             # initial conditions
-            folder['rms_w'].append(self.qmean2()) # qmean2
-            CER, CER_c = self.f_CER('validation') # Classificaiton error (absolute and per class)
-            folder['error_per_class_v'].append(CER_c) 
-            folder['CERv'].append(CER)
-            Ew, dEw, eqm = self.process() 
+            folder['rms_w'].append(self._qmean2()) # _qmean2
+            ER, ER_c = self.f_CER('validation') # Classificaiton error (absolute and per class)
+            folder['error_per_v'].append(ER_c) 
+            folder['ERv'].append(ER)
+            Ew, dEw, eqm = self._process() 
             folder['eq'].append(Ew)
-            folder['CER_min'] = min(folder['CERv'])
+            folder['ER_min'] = min(folder['ERv'])
             
             # temporary variables for the following optimization
             iter_minor = 1
@@ -496,12 +556,12 @@ class MLP(object):
             comp = []
             n_iter0 = int(folder['epoch'])
             
-            print 'Classification Error: Validation {}, Training {}'.format(self.f_CER('validation')[0],self.f_CER('training')[0])
+            print '{} Error: Validation {:.2E}, Training {:.2E}'.format(self.__mode__.upper(),self.f_CER('validation')[0],self.f_CER('training')[0])
             
             #let if begin
             while self.m_norm(dEw) > threshold and folder['epoch']-n_iter0 < n_itermax: # convergence condition/criteria
                 if success:
-                    s = self.hprocess()
+                    s = self._hprocess()
                     delta = p.T.dot(s)
                 else:
                     print('[{},{},{}]'.format('Fail',folder['epoch'],delta))
@@ -516,26 +576,26 @@ class MLP(object):
                       w[i][:] = w0[i][:]-alpha*dw0[i][:]
                 self.__haschanged__['training'] = True
                 self.__haschanged__['validation'] = True
-                [Ew1,dEw1,eqm1] = self.process()
-                CER1, error_per_class1 = self.f_CER('validation')
+                [Ew1,dEw1,eqm1] = self._process()
+                _ER, error_per_class1 = self.ER('validation')
                 comp.append((Ew-Ew1)/(-dEw.T.dot(alpha*p)-0.5*((alpha**2)*delta)))
                 #	In replacement to comp(it2) = 2*delta*(Ew-Ew1)/(mi^2); (is the same)
                 if comp[-1] > 0:
-                    print 'Classification Error (folder: {}, epoch: {}): Validation {}, Training {}, MSE {}'\
-                    .format(k,folder['epoch'],CER1,self.f_CER('training')[0],eqm1)
+                    print '{} Error (folder: {}, epoch: {}): Validation {:.2E}, Training {:.2E}, MSE {:.2E}'\
+                    .format(self.__mode__.upper(),k,folder['epoch'],_ER,self.ER('training')[0],eqm1)
                     Ew = Ew1; folder['eq'].append(Ew)
-                    if CER1 < folder['CER_min']:
-                        folder['CER_min'] = CER1
+                    if _ER < folder['ER_min']:
+                        folder['ER_min'] = _ER
                         for i in  self.__buffer__['W'].keys():
                               self.__buffer__['Wopt'][i][:] = self.__buffer__['W'][i][:]
                         folder['niter_v'] = folder['epoch']
-                    CER = CER1 
-                    folder['CERv'].append(CER)
+                    ER = _ER 
+                    folder['ERv'].append(ER)
                     dEw = dEw1
                     for i in range(folder['stw'].__len__()):
                           folder['stw'][i].append(self.m_norm(w0[i]-w[i]))
-                    folder['rms_w'].append(self.qmean2())
-                    folder['error_per_class_v'].append(error_per_class1)
+                    folder['rms_w'].append(self._qmean2())
+                    folder['error_per_v'].append(error_per_class1)
                     eqm_fim = eqm1
                     folder['epoch'] += 1
                     r1 = r
@@ -565,14 +625,14 @@ class MLP(object):
                     v_lambda.append(v_lambda[-1] + delta*(1-comp[-1])/(p_1.T.dot(p_1)))
                     rate = rate0
             print('Final mean squared error (training) = {} at iteration {}'.format(eqm_fim,folder['epoch']))
-            print('Final CER (validation) = {} at iteration {}'.format(folder['CER_min'],folder['niter_v']))
+            print('Final ER (validation) = {} at iteration {}'.format(folder['ER_min'],folder['niter_v']))
             self.save_net(_os.getcwd()+r'//Networks//{}_MLP//{}_{}'.format(self.__name__,self.__name__,k))
             self.save_weights(_os.getcwd()+r'/Networks/{}_MLP/{}_vw_{}'.format(self.__name__,self.__name__,k))
             #plt.figure()
-            #fig_CERv = plt.plot(self.CERv)
+            #fig_CERv = plt.plot(self.ERv)
             #plt.gca().set_title('Evolution of the Classification Error Rate along training - folder = {:d}'.format(folder))
             #plt.gca().set_xlabel('Epochs')
-            #plt.gca().set_ylabel('CER');
+            #plt.gca().set_ylabel('ER');
             #plt.figure()
             #fig_eq = plt.plot(self.eq)
             #plt.gca().set_title('Evolution of the quadratic error along training - folder = {:d}'.format(folder))

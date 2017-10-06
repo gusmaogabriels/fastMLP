@@ -79,8 +79,10 @@ elm_classifier.error('test')
 
  ```python  
 
-# instantiates the MLP class, with two hidden layers with 200 and 100 neurons, respectively	 
-mlp_classifier = mlp.MLP('the_net_name',hidden_layers=[200,100]) 
+# instantiates the MLP class as a classifier
+mlp_classifier = mlp.MLP('the_net_name', mode='classification')
+# with two hidden layers with 200 and 100 neurons, respectively	 
+mlp_classifier.set_structure([200,100])
 # loads the data and allocates the ANN strucure memmap files under the hood
 mlp_classifier.load_data(training_path,testing_path,W=[]) 
 # initialize the weights, from the initial guess (if given) or uniformily random
