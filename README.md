@@ -100,3 +100,9 @@ mlp_classifier.train(threshold = 1.0e-5, n_itermax = 1000, rate0 = 0.25,cut = 0.
 2. [os](https://docs.python.org/2/library/os.html) - Miscellaneous operating system interfaces
 3. [time](https://docs.python.org/2/library/time.html) - Time access and conversions
 4. [tempfile](https://docs.python.org/2/library/tempfile.html) - Generate temporary files and directories
+
+Copyright © 2016 - Gabriel Sabença Gusmão
+
+[![linkedin](https://static.licdn.com/scds/common/u/img/webpromo/btn_viewmy_160x25.png)](https://br.linkedin.com/pub/gabriel-saben%C3%A7a-gusm%C3%A3o/115/aa6/aa8)
+
+[![researchgate](https://www.researchgate.net/images/public/profile_share_badge.png)](https://www.researchgate.net/profile/Gabriel_Gusmao?cp=shp)
