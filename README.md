@@ -1,13 +1,8 @@
 **fastMLP**
 ==================================================================
-*Fast batch MLP (Multi-layer Perceptron) algorithm using numpy memmap.*
+*Fast batch MLP (Multi-layer aka deep Perceptron) algorithm using numpy memmap.*
 
 *pip install* -> `pip install --upgrade https://github.com/gusmaogabriels/fastMLP/zipball/master`
-
-**The University of Campinas, UNICAMP**
-
-* IA013 - Introdução à Computação Natural - *Introduction to Natural Computing*
-   - *Prof. Dr. Levy Boccato; Prof. Dr. Fernando Von Zuben.*
 
 ### Overview
 Fully Connected Multi-layer perceptron (MLP) Artificial Neural Network (ANN).  
@@ -106,3 +101,8 @@ Copyright © 2016 - Gabriel Sabença Gusmão
 [![linkedin](https://static.licdn.com/scds/common/u/img/webpromo/btn_viewmy_160x25.png)](https://br.linkedin.com/pub/gabriel-saben%C3%A7a-gusm%C3%A3o/115/aa6/aa8)
 
 [![researchgate](https://www.researchgate.net/images/public/profile_share_badge.png)](https://www.researchgate.net/profile/Gabriel_Gusmao?cp=shp)
+
+**The University of Campinas, UNICAMP**
+
+* IA013 - Introdução à Computação Natural - *Introduction to Natural Computing*
+   - *Prof. Dr. Levy Boccato; Prof. Dr. Fernando Von Zuben.*
